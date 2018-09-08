@@ -15,14 +15,10 @@ defmodule OpenBanking.ClientCredentialsGrant do
   requested Claims."
   https://openid.net/specs/openid-connect-core-1_0.html#IDToken
 
-  ## Examples
+  Financial-grade API: JWT Secured Authorization Response Mode for OAuth 2.0
+  JWT-based Response Mode
+  https://bitbucket.org/openid/fapi/src/master/Financial_API_JWT_Secured_Authorization_Response_Mode.md?fileviewer=file-view-default#markdown-header-4-jwt-based-response-mode
 
-      iex> OpenBanking.ClientCredentialsGrant.claims("example_client_id","http://example.com/token")
-      %{
-        iss: "example_client_id",
-        sub: "example_client_id",
-        aud: "http://example.com/token"
-      }
   """
   def claims(client_id, token_endpoint) when is_binary(client_id) and is_binary(token_endpoint) do
     %{
