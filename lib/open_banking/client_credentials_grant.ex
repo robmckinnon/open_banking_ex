@@ -32,10 +32,6 @@ defmodule OpenBanking.ClientCredentialsGrant do
   Returns {:ok, jwt, claims}
   """
   def sign(claims, signing_key) do
-    IO.inspect("---")
-    IO.inspect("claims")
-    IO.inspect(claims)
-    IO.inspect("---")
     signer = Joken.Signer.create("RS256", %{"pem" => signing_key})
     Joken.encode_and_sign(claims, signer)
   end
@@ -57,7 +53,7 @@ defmodule OpenBanking.ClientCredentialsGrant do
   @doc """
   Posts access token request to token endpoint.
   """
-  def post_access_request(token_endpoint, access_token_request, cert_path, key_path) do
+  def post_access_request(token_endpoint, access_token_request, key_path, cert_path) do
     access_token_request = access_token_request |> Map.to_list()
 
     HTTPoison.post(
@@ -124,8 +120,8 @@ defmodule OpenBanking.ClientCredentialsGrant do
       case post_access_request(
              token_endpoint,
              request_payload,
-             transport_cert_file,
-             transport_key_file
+             transport_key_file,
+             transport_cert_file
            ) do
         {:ok, response} ->
           response
@@ -137,7 +133,7 @@ defmodule OpenBanking.ClientCredentialsGrant do
     else
       error ->
         Logger.warn(inspect(error))
-        raise error
+        raise inspect(error)
     end
   end
 end
