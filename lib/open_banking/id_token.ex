@@ -3,6 +3,8 @@ defmodule OpenBanking.IdToken do
   For generating ID Token.
   """
 
+  alias Joken.Config
+
   @doc """
   "The primary extension that OpenID Connect makes to OAuth 2.0 to enable
   End-Users to be Authenticated is the ID Token data structure. The ID Token is
@@ -10,25 +12,18 @@ defmodule OpenBanking.IdToken do
   by an Authorization Server when using a Client, and potentially other
   requested Claims."
   https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+
+  Examples
+    iex> claims(iss: "iss", sub: "sub", aud: "aud")
   """
   def claims(iss: iss, sub: sub, aud: aud) do
-    claims(iss: iss, sub: sub, aud: aud, exp: 600)
+    claims(iss: iss, sub: sub, aud: aud, default_exp: 600)
   end
 
-  def claims(iss: iss, sub: sub, aud: aud, exp: exp) do
-    iat = DateTime.utc_now() |> DateTime.to_unix()
-
-    %{
-      # Issuer Identifier for the Issuer of the response:
-      iss: iss,
-      # Subject Identifier:
-      sub: sub,
-      # Audience(s) that this ID Token is intended for:
-      aud: aud,
-      # Expiration time
-      exp: iat + exp,
-      # Time at which the JWT was issued
-      iat: iat
-    }
+  def claims(iss: iss, sub: sub, aud: aud, default_exp: default_exp) do
+    Config.default_claims(iss: iss, default_exp: default_exp)
+    |> Joken.Config.add_claim("aud", fn -> aud end)
+    |> Joken.Config.add_claim("sub", fn -> sub end)
+    |> Joken.generate_claims()
   end
 end
