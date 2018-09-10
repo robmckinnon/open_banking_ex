@@ -3,7 +3,6 @@ defmodule OpenBanking.ClientCredentialsGrant do
   For performing HTTP POST calls to token endpoint.
   """
 
-  import Joken
   require Logger
   alias OpenBanking.IdToken
 
@@ -115,7 +114,7 @@ defmodule OpenBanking.ClientCredentialsGrant do
       when is_binary(client_id) and is_binary(token_endpoint) and
              is_binary(token_endpoint_auth_method) and is_binary(scope) do
     with {:ok, claims} <- claims(client_id, token_endpoint),
-         {:ok, jwt, claims} <- sign(claims, signing_key),
+         {:ok, jwt, _claims} <- sign(claims, signing_key),
          request_payload <- access_token_request_payload(scope, jwt) do
       case post_access_request(
              token_endpoint,
