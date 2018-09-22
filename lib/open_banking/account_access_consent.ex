@@ -97,4 +97,51 @@ defmodule OpenBanking.AccountAccessConsent do
       end
     end
   end
+
+  @doc """
+  Returns ConsentId from response body.
+
+  Examples:
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "{\\"Data\\":{\\"AccountRequestId\\":\\"ae49844c-5912-43bc-bac8-2bd8313ce4e0\\",\\"Permissions\\":[\\"ReadAccountsDetail\\"],\\"CreationDateTime\\":\\"2018-09-22T13:24:31.010Z\\",\\"Status\\":\\"AwaitingAuthorisation\\",\\"StatusUpdateDateTime\\":\\"2018-09-22T13:24:31.010Z\\"},\\"Links\\":{},\\"Meta\\":{},\\"Risk\\":{}}",
+  iex>   status_code: 201
+  iex> }
+  iex> OpenBanking.AccountAccessConsent.consent_id(response)
+  {:ok, "ae49844c-5912-43bc-bac8-2bd8313ce4e0"}
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "{\\"Data\\":{\\"ConsentId\\":\\"be49844c-5912-43bc-bac8-2bd8313ce4e0\\",\\"Permissions\\":[\\"ReadAccountsDetail\\"],\\"CreationDateTime\\":\\"2018-09-22T13:24:31.010Z\\",\\"Status\\":\\"AwaitingAuthorisation\\",\\"StatusUpdateDateTime\\":\\"2018-09-22T13:24:31.010Z\\"},\\"Links\\":{},\\"Meta\\":{},\\"Risk\\":{}}",
+  iex>   status_code: 201
+  iex> }
+  iex> OpenBanking.AccountAccessConsent.consent_id(response)
+  {:ok, "be49844c-5912-43bc-bac8-2bd8313ce4e0"}
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "{\\"Data\\":{}}",
+  iex>   status_code: 201
+  iex> }
+  iex> OpenBanking.AccountAccessConsent.consent_id(response)
+  {:error, "No ConsentId/AccountRequestId present in: {\\"Data\\":{}}"}
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "invalid-json",
+  iex>   status_code: 201
+  iex> }
+  iex> OpenBanking.AccountAccessConsent.consent_id(response)
+  {:error, "No ConsentId/AccountRequestId present due to invalid JSON: invalid-json"}
+  """
+  def consent_id(%{body: body, status_code: 201}) when is_binary(body) do
+    case Poison.decode(body) do
+      {:ok, parsed} ->
+        case parsed do
+          %{"Data" => %{"AccountRequestId" => consent_id}} -> {:ok, consent_id}
+          %{"Data" => %{"ConsentId" => consent_id}} -> {:ok, consent_id}
+          _ -> {:error, "No ConsentId/AccountRequestId present in: #{body}"}
+        end
+
+      {:error, _reason} ->
+        {:error, "No ConsentId/AccountRequestId present due to invalid JSON: #{body}"}
+    end
+  end
 end
