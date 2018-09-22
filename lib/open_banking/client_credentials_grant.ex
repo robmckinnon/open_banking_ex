@@ -135,4 +135,43 @@ defmodule OpenBanking.ClientCredentialsGrant do
         raise inspect(error)
     end
   end
+
+  @doc """
+  Returns access_token from response body.
+
+  Examples:
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "{\\"access_token\\":\\"59855fa2-a231-4661-a751-875e6a378eed\\",\\"token_type\\":\\"Bearer\\",\\"expires_in\\":3600}",
+  iex>   status_code: 200
+  iex> }
+  iex> OpenBanking.ClientCredentialsGrant.access_token(response)
+  {:ok, "59855fa2-a231-4661-a751-875e6a378eed"}
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "{\\"token_type\\":\\"Bearer\\",\\"expires_in\\":3600}",
+  iex>   status_code: 200
+  iex> }
+  iex> OpenBanking.ClientCredentialsGrant.access_token(response)
+  {:error, "No access_token present in: {\\"token_type\\":\\"Bearer\\",\\"expires_in\\":3600}"}
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "invalid-json",
+  iex>   status_code: 200
+  iex> }
+  iex> OpenBanking.ClientCredentialsGrant.access_token(response)
+  {:error, "No access_token present due to invalid JSON: invalid-json"}
+  """
+  def access_token(%{body: body, status_code: 200}) when is_binary(body) do
+    case Poison.decode(body) do
+      {:ok, parsed} ->
+        case parsed do
+          %{"access_token" => access_token} -> {:ok, access_token}
+          _ -> {:error, "No access_token present in: #{body}"}
+        end
+
+      {:error, _reason} ->
+        {:error, "No access_token present due to invalid JSON: #{body}"}
+    end
+  end
 end
