@@ -21,11 +21,12 @@ defmodule OpenBanking.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:joken, git: "https://github.com/bryanjos/joken.git", tag: "v2.0.0-rc0"},
+      {:json_web_token, "~> 0.2"},
+      {:joken, git: "https://github.com/bryanjos/joken.git", tag: "v2.0.0-rc2"},
       {:httpoison, "~> 1.3"},
       {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
       {:mock, "~> 0.3.0", only: :test},
-      {:poison, "~> 4.0"},
+      {:poison, "~> 3.1"},
       {:elixir_uuid, "~> 1.2"}
     ]
   end
