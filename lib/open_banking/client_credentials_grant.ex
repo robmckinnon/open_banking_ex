@@ -3,7 +3,6 @@ defmodule OpenBanking.ClientCredentialsGrant do
   For performing HTTP POST calls to token endpoint.
   """
 
-  import Joken
   require Logger
   alias OpenBanking.IdToken
 
@@ -32,10 +31,6 @@ defmodule OpenBanking.ClientCredentialsGrant do
   Returns {:ok, jwt, claims}
   """
   def sign(claims, signing_key) do
-    IO.inspect("---")
-    IO.inspect("claims")
-    IO.inspect(claims)
-    IO.inspect("---")
     signer = Joken.Signer.create("RS256", %{"pem" => signing_key})
     Joken.encode_and_sign(claims, signer)
   end
@@ -57,7 +52,7 @@ defmodule OpenBanking.ClientCredentialsGrant do
   @doc """
   Posts access token request to token endpoint.
   """
-  def post_access_request(token_endpoint, access_token_request, cert_path, key_path) do
+  def post_access_request(token_endpoint, access_token_request, key_path, cert_path) do
     access_token_request = access_token_request |> Map.to_list()
 
     HTTPoison.post(
@@ -119,13 +114,13 @@ defmodule OpenBanking.ClientCredentialsGrant do
       when is_binary(client_id) and is_binary(token_endpoint) and
              is_binary(token_endpoint_auth_method) and is_binary(scope) do
     with {:ok, claims} <- claims(client_id, token_endpoint),
-         {:ok, jwt, claims} <- sign(claims, signing_key),
+         {:ok, jwt, _claims} <- sign(claims, signing_key),
          request_payload <- access_token_request_payload(scope, jwt) do
       case post_access_request(
              token_endpoint,
              request_payload,
-             transport_cert_file,
-             transport_key_file
+             transport_key_file,
+             transport_cert_file
            ) do
         {:ok, response} ->
           response
@@ -137,7 +132,46 @@ defmodule OpenBanking.ClientCredentialsGrant do
     else
       error ->
         Logger.warn(inspect(error))
-        raise error
+        raise inspect(error)
+    end
+  end
+
+  @doc """
+  Returns access_token from response body.
+
+  Examples:
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "{\\"access_token\\":\\"59855fa2-a231-4661-a751-875e6a378eed\\",\\"token_type\\":\\"Bearer\\",\\"expires_in\\":3600}",
+  iex>   status_code: 200
+  iex> }
+  iex> OpenBanking.ClientCredentialsGrant.access_token(response)
+  {:ok, "59855fa2-a231-4661-a751-875e6a378eed"}
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "{\\"token_type\\":\\"Bearer\\",\\"expires_in\\":3600}",
+  iex>   status_code: 200
+  iex> }
+  iex> OpenBanking.ClientCredentialsGrant.access_token(response)
+  {:error, "No access_token present in: {\\"token_type\\":\\"Bearer\\",\\"expires_in\\":3600}"}
+
+  iex> response = %HTTPoison.Response{
+  iex>   body: "invalid-json",
+  iex>   status_code: 200
+  iex> }
+  iex> OpenBanking.ClientCredentialsGrant.access_token(response)
+  {:error, "No access_token present due to invalid JSON: invalid-json"}
+  """
+  def access_token(%{body: body, status_code: 200}) when is_binary(body) do
+    case Poison.decode(body) do
+      {:ok, parsed} ->
+        case parsed do
+          %{"access_token" => access_token} -> {:ok, access_token}
+          _ -> {:error, "No access_token present in: #{body}"}
+        end
+
+      {:error, _reason} ->
+        {:error, "No access_token present due to invalid JSON: #{body}"}
     end
   end
 end

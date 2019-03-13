@@ -25,7 +25,7 @@ defmodule OpenBanking.MixProject do
       {:httpoison, "~> 1.3"},
       {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
       {:mock, "~> 0.3.0", only: :test},
-      {:poison, "~> 3.0"}
+      {:poison, "~> 4.0"}
     ]
   end
 end
