@@ -23,9 +23,9 @@ defmodule OpenBanking.MixProject do
     [
       {:json_web_token, "~> 0.2"},
       {:joken, git: "https://github.com/bryanjos/joken.git", tag: "v2.0.0-rc2"},
-      {:httpoison, "~> 1.3"},
+      {:httpoison, "~> 1.5.0"},
       {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
-      {:mock, "~> 0.3.0", only: :test},
+      {:mock, "~> 0.3.3", only: :test},
       {:poison, "~> 3.1"},
       {:elixir_uuid, "~> 1.2"}
     ]
