@@ -35,7 +35,7 @@ defmodule OpenBanking.AccountAccessConsent do
     "ReadStatementsDetail"
   ]
 
-  defp request_payload(permissions \\ @all_permissions) do
+  defp request_payload(permissions) do
     %{
       Data: %{
         Permissions: permissions
@@ -72,9 +72,9 @@ defmodule OpenBanking.AccountAccessConsent do
         access_token,
         resource_endpoint,
         fapi_financial_id,
-        permissions \\ @all_permissions,
         transport_key_file \\ "./certificates/transport.key",
-        transport_cert_file \\ "./certificates/transport.pem"
+        transport_cert_file \\ "./certificates/transport.pem",
+        permissions \\ @all_permissions
       )
       when is_binary(access_token) and is_binary(resource_endpoint) and
              is_binary(fapi_financial_id) and is_list(permissions) and
