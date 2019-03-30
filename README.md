@@ -1,8 +1,11 @@
 # open_banking
-Elixir helper functions for using Open Banking APIs.
+Elixir helper functions for using the [UK Open Banking API](https://www.openbanking.org.uk).
 
-This Elixir API may change before a formal release is made.
-It is a work in progress.
+This Elixir API:
+
+- is not affliated with Open Banking.
+- is a work in progress.
+- may change before a formal release is made.
 
 ## Example usage:
 
