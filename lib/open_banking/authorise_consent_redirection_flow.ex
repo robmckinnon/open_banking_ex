@@ -102,13 +102,19 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
   be used for verifying the JWS."
   """
   def sign(payload, signing_key, kid, alg \\ "RS256") do
-    header = %{
-      alg: alg,
-      kid: kid
-    }
+    case signing_key do
+      nil ->
+        JsonWebToken.sign(payload, %{alg: "none"})
 
-    to_sign = signing_input(header, payload)
-    "#{to_sign}.#{signature(alg, signing_key, to_sign)}"
+      _ ->
+        header = %{
+          alg: alg,
+          kid: kid
+        }
+
+        to_sign = signing_input(header, payload)
+        "#{to_sign}.#{signature(alg, signing_key, to_sign)}"
+    end
   end
 
   defp signature(algorithm, key, signing_input) do
@@ -159,7 +165,7 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
         nonce \\ nil
       ) do
     request =
-      OpenBanking.AuthoriseConsentRedirectionFlow.authorisation_request(
+      authorisation_request(
         scope,
         consent_id,
         client_id,
@@ -169,8 +175,7 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
         nonce
       )
 
-    signed_token_request =
-      OpenBanking.AuthoriseConsentRedirectionFlow.sign(request, signing_key, kid)
+    signed_token_request = sign(request, signing_key, kid)
 
     authorization_endpoint <>
       "?" <>

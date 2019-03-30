@@ -60,7 +60,8 @@ defmodule OpenBanking.AuthorisationCodeGrant do
         client_id,
         token_endpoint,
         signing_key,
-        token_endpoint_auth_method = "private_key_jwt",
+        client_secret,
+        token_endpoint_auth_method,
         redirect_uri,
         authorisation_code,
         transport_key_file \\ "./certificates/transport.key",
@@ -76,7 +77,7 @@ defmodule OpenBanking.AuthorisationCodeGrant do
       client_id,
       token_endpoint,
       signing_key,
-      nil,
+      client_secret,
       transport_key_file,
       transport_cert_file
     )

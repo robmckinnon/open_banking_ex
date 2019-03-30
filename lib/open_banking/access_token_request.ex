@@ -91,7 +91,8 @@ defmodule OpenBanking.AccessTokenRequest do
 
   # Basic Authentication Scheme: https://tools.ietf.org/html/rfc2617#section-2
   defp basic_credentials(client_id, client_secret) do
-    basic_credentials = Base.encode64("#{client_id}:#{client_secret}")
+    subject = "#{client_id}:#{client_secret}"
+    basic_credentials = Base.url_encode64(subject)
     "Basic #{basic_credentials}"
   end
 
