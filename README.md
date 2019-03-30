@@ -46,6 +46,7 @@ grant_response =
     client_id,
     token_endpoint,
     signing_key,
+    client_secret,
     token_endpoint_auth_method,
     scope,
     transport_key_file,

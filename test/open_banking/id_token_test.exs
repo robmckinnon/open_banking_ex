@@ -1,5 +1,5 @@
 defmodule OpenBanking.IdTokenTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   import Mock
   alias OpenBanking.IdToken

@@ -3,7 +3,7 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
   For performing authorise consent redirection flow steps.
   """
 
-  alias Joken.Signer
+  # alias Joken.Signer
   alias JsonWebToken.Jwa
   require Logger
 

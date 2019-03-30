@@ -72,10 +72,11 @@ defmodule OpenBanking.AuthorisationCodeGrant do
     authorisation_code
     |> access_token_request_payload(client_id, redirect_uri)
     |> do_request_access_token(
+      token_endpoint_auth_method,
       client_id,
       token_endpoint,
       signing_key,
-      token_endpoint_auth_method,
+      nil,
       transport_key_file,
       transport_cert_file
     )
