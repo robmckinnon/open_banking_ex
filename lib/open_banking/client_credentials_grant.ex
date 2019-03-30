@@ -15,6 +15,11 @@ defmodule OpenBanking.ClientCredentialsGrant do
 
   "grant_type - REQUIRED.  Value MUST be set to "client_credentials".
    scope - OPTIONAL.  The scope of the access request."
+
+  ## Example
+    iex> alias OpenBanking.ClientCredentialsGrant
+    iex> ClientCredentialsGrant.access_token_request_payload("accounts")
+    %{grant_type: "client_credentials", scope: "accounts"}
   """
   def access_token_request_payload(scope) do
     %{
@@ -51,7 +56,8 @@ defmodule OpenBanking.ClientCredentialsGrant do
         client_id,
         token_endpoint,
         signing_key,
-        token_endpoint_auth_method = "private_key_jwt",
+        client_secret,
+        token_endpoint_auth_method \\ "private_key_jwt",
         scope \\ "accounts payments",
         transport_key_file \\ "./certificates/transport.key",
         transport_cert_file \\ "./certificates/transport.pem"
@@ -61,10 +67,11 @@ defmodule OpenBanking.ClientCredentialsGrant do
     scope
     |> access_token_request_payload()
     |> do_request_access_token(
+      token_endpoint_auth_method,
       client_id,
       token_endpoint,
       signing_key,
-      token_endpoint_auth_method,
+      client_secret,
       transport_key_file,
       transport_cert_file
     )

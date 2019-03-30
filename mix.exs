@@ -22,7 +22,7 @@ defmodule OpenBanking.MixProject do
   defp deps do
     [
       {:json_web_token, "~> 0.2"},
-      {:joken, git: "https://github.com/bryanjos/joken.git", tag: "v2.0.0-rc2"},
+      {:joken, "~> 2.0.1"},
       {:httpoison, "~> 1.5.0"},
       {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
       {:mock, "~> 0.3.3", only: :test},

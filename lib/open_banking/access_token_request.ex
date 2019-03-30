@@ -10,15 +10,62 @@ defmodule OpenBanking.AccessTokenRequest do
 
   def do_request_access_token(
         request_payload,
+        token_endpoint_auth_method,
         client_id,
         token_endpoint,
         signing_key,
-        token_endpoint_auth_method = "private_key_jwt",
-        transport_key_file \\ "./certificates/transport.key",
-        transport_cert_file \\ "./certificates/transport.pem"
+        client_secret
       )
       when is_binary(client_id) and is_binary(token_endpoint) and
              is_binary(token_endpoint_auth_method) do
+    do_request_access_token(
+      request_payload,
+      token_endpoint_auth_method,
+      client_id,
+      token_endpoint,
+      signing_key,
+      client_secret,
+      "./certificates/transport.key",
+      "./certificates/transport.pem"
+    )
+  end
+
+  def do_request_access_token(
+        request_payload,
+        _token_endpoint_auth_method = "client_secret_basic",
+        client_id,
+        token_endpoint,
+        _signing_key,
+        client_secret,
+        transport_key_file,
+        transport_cert_file
+      )
+      when is_binary(client_id) and is_binary(token_endpoint) do
+    headers = [
+      {"authorization", basic_credentials(client_id, client_secret)}
+    ]
+
+    token_endpoint
+    |> post_access_request(
+      request_payload,
+      transport_key_file,
+      transport_cert_file,
+      headers
+    )
+    |> handle_response
+  end
+
+  def do_request_access_token(
+        request_payload,
+        _token_endpoint_auth_method = "private_key_jwt",
+        client_id,
+        token_endpoint,
+        signing_key,
+        _client_secret,
+        transport_key_file,
+        transport_cert_file
+      )
+      when is_binary(client_id) and is_binary(token_endpoint) do
     with {:ok, claims} <- IdToken.claims(client_id: client_id, token_endpoint: token_endpoint),
          {:ok, jwt, _claims} <- IdToken.sign(claims, signing_key) do
       request_payload =
@@ -42,6 +89,13 @@ defmodule OpenBanking.AccessTokenRequest do
     end
   end
 
+  # Basic Authentication Scheme: https://tools.ietf.org/html/rfc2617#section-2
+  defp basic_credentials(client_id, client_secret) do
+    subject = "#{client_id}:#{client_secret}"
+    basic_credentials = Base.url_encode64(subject)
+    "Basic #{basic_credentials}"
+  end
+
   defp handle_response({:ok, response}), do: response
 
   defp handle_response({:error, error = %HTTPoison.Error{reason: reason}}) do
@@ -52,14 +106,20 @@ defmodule OpenBanking.AccessTokenRequest do
   @doc """
   Posts access token request to token endpoint.
   """
-  def post_access_request(token_endpoint, access_token_request, key_path, cert_path) do
+  def post_access_request(
+        token_endpoint,
+        access_token_request,
+        key_path,
+        cert_path,
+        headers \\ nil
+      ) do
     access_token_request = access_token_request |> Map.to_list()
     Logger.info(inspect(access_token_request))
 
     HTTPoison.post(
       token_endpoint,
       {:form, access_token_request},
-      [{"Content-Type", "application/x-www-form-urlencoded"}],
+      access_request_headers(headers),
       ssl: [
         certfile: cert_path,
         keyfile: key_path,
@@ -111,5 +171,15 @@ defmodule OpenBanking.AccessTokenRequest do
       {:error, _reason} ->
         {:error, "No access_token present due to invalid JSON: #{body}"}
     end
+  end
+
+  defp access_request_headers(nil) do
+    [{"Content-Type", "application/x-www-form-urlencoded"}]
+  end
+
+  defp access_request_headers(headers) do
+    access_request_headers(nil)
+    |> Enum.concat(headers)
+    |> List.flatten()
   end
 end
