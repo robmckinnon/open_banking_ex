@@ -3,6 +3,7 @@ defmodule OpenBanking.AccountAccessConsent do
   For performing HTTP POST calls to token endpoint.
   """
 
+  alias OpenBanking.SslConfig
   require Logger
 
   defp headers(access_token, fapi_financial_id) do
@@ -48,22 +49,6 @@ defmodule OpenBanking.AccountAccessConsent do
     |> Poison.encode!()
   end
 
-  @ca_cert_path "./certificates/ob/sandbox/ca.pem"
-
-  def ssl_config(key_path, cert_path) do
-    [
-      certfile: cert_path,
-      keyfile: key_path,
-      cacertfile: @ca_cert_path,
-      # secure_renegotiate: true,
-      # reuse_sessions: true,
-      # verify: :verify_peer,
-      verify: :verify_none,
-      # fail_if_no_peer_cert: true
-      fail_if_no_peer_cert: false
-    ]
-  end
-
   @doc """
   Account access consent request, to obtain
   ConsentId/AccountRequestId.
@@ -81,7 +66,7 @@ defmodule OpenBanking.AccountAccessConsent do
              is_binary(transport_key_file) and is_binary(transport_cert_file) do
     with headers <- headers(access_token, fapi_financial_id),
          request_payload <- request_payload(permissions),
-         ssl_config <- ssl_config(transport_key_file, transport_cert_file) do
+         ssl_config <- SslConfig.ssl_config(transport_cert_file, transport_key_file) do
       case HTTPoison.post(
              "#{resource_endpoint}/open-banking/v2.0/account-requests",
              request_payload,

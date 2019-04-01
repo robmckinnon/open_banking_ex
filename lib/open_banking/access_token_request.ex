@@ -4,9 +4,7 @@ defmodule OpenBanking.AccessTokenRequest do
   """
 
   require Logger
-  alias OpenBanking.IdToken
-
-  @ca_cert_path "./certificates/ob/sandbox/ca.pem"
+  alias OpenBanking.{IdToken, SslConfig}
 
   def do_request_access_token(
         request_payload,
@@ -120,17 +118,7 @@ defmodule OpenBanking.AccessTokenRequest do
       token_endpoint,
       {:form, access_token_request},
       access_request_headers(headers),
-      ssl: [
-        certfile: cert_path,
-        keyfile: key_path,
-        cacertfile: @ca_cert_path,
-        # secure_renegotiate: true,
-        # reuse_sessions: true,
-        # verify: :verify_peer,
-        verify: :verify_none,
-        # fail_if_no_peer_cert: true
-        fail_if_no_peer_cert: false
-      ]
+      ssl: SslConfig.ssl_config(cert_path, key_path)
     )
   end
 

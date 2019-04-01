@@ -104,8 +104,7 @@ grant_response =
     code
   )
 
-{:ok, resource_access_token} = OpenBanking.AccountAccessConsent.access_token(grant_response)
-
+{:ok, resource_access_token} = OpenBanking.AccessTokenRequest.access_token(grant_response)
 
 # Accounts endpoint request:
 accounts_endpoint = "#{resource_endpoint}/open-banking/v2.0/accounts"

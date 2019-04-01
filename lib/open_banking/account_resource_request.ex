@@ -4,8 +4,9 @@ defmodule OpenBanking.AccountResourceRequest do
   """
   require Logger
 
+  alias OpenBanking.SslConfig
+
   @application_json "application/json; charset=utf-8"
-  @ca_cert_path "./certificates/ob/sandbox/ca.pem"
 
   @doc """
   Get account resource.
@@ -27,17 +28,7 @@ defmodule OpenBanking.AccountResourceRequest do
         {"Authorization", "Bearer #{access_token}"},
         {"x-fapi-financial-id", fapi_financial_id}
       ],
-      ssl: [
-        certfile: cert_path,
-        keyfile: key_path,
-        cacertfile: @ca_cert_path,
-        # secure_renegotiate: true,
-        # reuse_sessions: true,
-        # verify: :verify_peer,
-        verify: :verify_none,
-        # fail_if_no_peer_cert: true
-        fail_if_no_peer_cert: false
-      ]
+      ssl: SslConfig.ssl_config(cert_path, key_path)
     )
   end
 
