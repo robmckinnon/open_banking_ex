@@ -20,7 +20,7 @@ erl_crash.dump
 *.ez
 
 # Ignore package tarball (built via "mix hex.build").
-open_banking-*.tar
+open_banking_ex-*.tar
 
 # Ignore transport cert/key
 /certificates/transport*

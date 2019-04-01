@@ -1,4 +1,4 @@
-# open_banking
+# open_banking_ex
 Elixir helper functions for using the [UK Open Banking API](https://www.openbanking.org.uk).
 
 This Elixir API:
@@ -12,8 +12,8 @@ This Elixir API:
 Clone repository, install dependencies, and run Elixir REPL:
 
 ```sh
-git clone https://github.com/robmckinnon/open_banking.git
-cd open_banking
+git clone https://github.com/robmckinnon/open_banking_ex.git
+cd open_banking_ex
 
 mix deps.get
 iex -S mix

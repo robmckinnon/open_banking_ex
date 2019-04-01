@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure your application as:
 #
-#     config :open_banking, key: :value
+#     config :open_banking_ex, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:open_banking, :key)
+#     Application.get_env(:open_banking_ex, :key)
 #
 # You can also configure a 3rd-party app:
 #

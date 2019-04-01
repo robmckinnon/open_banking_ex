@@ -3,9 +3,9 @@ defmodule OpenBanking.MixProject do
 
   def project do
     [
-      app: :open_banking,
+      app: :open_banking_ex,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.6 or ~> 1.7 or ~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
