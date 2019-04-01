@@ -1,6 +1,8 @@
 # open_banking_ex
 Elixir helper functions for using the [UK Open Banking API](https://www.openbanking.org.uk).
 
+[![Build Status](https://api.travis-ci.org/robmckinnon/open_banking_ex.svg)](https://travis-ci.org/robmckinnon/open_banking_ex)
+
 This Elixir API:
 
 - is not affliated with Open Banking.
