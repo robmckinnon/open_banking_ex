@@ -178,7 +178,8 @@ defmodule OpenBanking.AccessTokenRequest do
   end
 
   defp access_request_headers(headers) do
-    access_request_headers(nil)
+    nil
+    |> access_request_headers()
     |> Enum.concat(headers)
     |> List.flatten()
   end

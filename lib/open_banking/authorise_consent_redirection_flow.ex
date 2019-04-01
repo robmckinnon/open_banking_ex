@@ -4,7 +4,9 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
   """
 
   # alias Joken.Signer
+  alias JsonWebToken.Algorithm.RsaUtil
   alias JsonWebToken.Jwa
+
   require Logger
 
   defp claims(consent_id) do
@@ -74,7 +76,7 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
       scope: scope,
       state: state,
       nonce: nonce,
-      max_age: 86400,
+      max_age: 86_400,
       claims: claims(consent_id)
     }
   end
@@ -118,9 +120,10 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
   end
 
   defp signature(algorithm, key, signing_input) do
-    key = JsonWebToken.Algorithm.RsaUtil.private_key(key)
+    key = RsaUtil.private_key(key)
 
-    Jwa.sign(algorithm, key, signing_input)
+    algorithm
+    |> Jwa.sign(key, signing_input)
     |> Base.url_encode64(padding: false)
   end
 

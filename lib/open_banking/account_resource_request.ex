@@ -1,6 +1,6 @@
 defmodule OpenBanking.AccountResourceRequest do
   @moduledoc """
-
+  For performing HTTP GET call to an Account API resource endpoint.
   """
   require Logger
 

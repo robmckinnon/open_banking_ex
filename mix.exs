@@ -25,6 +25,7 @@ defmodule OpenBanking.MixProject do
       {:joken, "~> 2.0.1"},
       {:httpoison, "~> 1.5.0"},
       {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
+      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:mock, "~> 0.3.3", only: :test},
       {:poison, "~> 3.1"},
       {:elixir_uuid, "~> 1.2"}
