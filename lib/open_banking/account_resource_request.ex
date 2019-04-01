@@ -9,7 +9,8 @@ defmodule OpenBanking.AccountResourceRequest do
   @application_json "application/json; charset=utf-8"
 
   @doc """
-  Get account resource.
+  Get Account API resource from given resource_endpoint.
+  Returns {:ok, response} or {:error, error}.
   """
   def get_account_resource(
         resource_endpoint,
@@ -32,6 +33,10 @@ defmodule OpenBanking.AccountResourceRequest do
     )
   end
 
+  @doc """
+  Get Account API resource from given resource_endpoint.
+  Returns response or raises Error.
+  """
   def request_account_resource(
         client_id,
         resource_endpoint,

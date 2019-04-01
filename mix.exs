@@ -28,7 +28,10 @@ defmodule OpenBanking.MixProject do
       {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:mock, "~> 0.3.3", only: :test},
       {:poison, "~> 3.1"},
-      {:elixir_uuid, "~> 1.2"}
+      {:elixir_uuid, "~> 1.2"},
+      # Doc dependencies
+      {:ex_doc, "~> 0.19", only: :docs, runtime: false},
+      {:inch_ex, "~> 2.0", only: :docs, runtime: false}
     ]
   end
 end

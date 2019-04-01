@@ -6,6 +6,13 @@ defmodule OpenBanking.AccessTokenRequest do
   require Logger
   alias OpenBanking.{IdToken, SslConfig}
 
+  @doc """
+  Request access token from token_endpoint using given
+  token_endpoint_auth_method to authenticate.
+  The token_endpoint_auth_method's supported are:
+  * client_secret_basic
+  * private_key_jwt
+  """
   def do_request_access_token(
         request_payload,
         token_endpoint_auth_method,
@@ -28,6 +35,10 @@ defmodule OpenBanking.AccessTokenRequest do
     )
   end
 
+  @doc """
+  Request access token from token_endpoint using
+  "client_secret_basic" authentication method to authenticate.
+  """
   def do_request_access_token(
         request_payload,
         _token_endpoint_auth_method = "client_secret_basic",
@@ -53,6 +64,10 @@ defmodule OpenBanking.AccessTokenRequest do
     |> handle_response
   end
 
+  @doc """
+  Request access token from token_endpoint using
+  "private_key_jwt" authentication method to authenticate.
+  """
   def do_request_access_token(
         request_payload,
         _token_endpoint_auth_method = "private_key_jwt",
