@@ -4,17 +4,27 @@ Elixir helper functions for using the [UK Open Banking API](https://www.openbank
 
 [![Build Status](https://api.travis-ci.org/robmckinnon/open_banking_ex.svg)](https://travis-ci.org/robmckinnon/open_banking_ex)
 
-This Elixir API:
+## Contents
 
-- is not affliated with the Open Banking Implementation Entity (OBIE).
-- is a work in progress.
-- may change before a formal release is made.
+- [Caveats](#caveats)
+- [Open Banking API](#open-banking-api)
+- [Local install](#local-install)
+- [Example usage](#example-usage)
+- [Guide to obtaining sandbox access credentials](#guide-to-obtaining-sandbox-credentials)
+
+## Caveats
+
+Note this `open_banking_ex` Elixir package:
+
+- Is not affliated with the Open Banking Implementation Entity (OBIE).
+- Is a work in progress.
+- May change before a formal release is made.
 
 ## Open Banking API
 
-To use production Open Banking API implementations from Account Servicing Payment Service Providers (ASPSPs) you must [register and authorise your business with the UK Financial Conduct Authority (FCA)](https://www.fca.org.uk/firms/new-regulated-payment-services-ais-pis).
+You can use sandboxes provided by some organisations to test code against the UK Open Banking API standard without being regulated.
 
-To test Open Banking APIs without being FCA regulated you can use sandboxes provided by some organisations for that purpose.
+To register with and use _production_ Open Banking API implementations from Account Servicing Payment Service Providers (ASPSPs) you must [register and authorise your business with the UK Financial Conduct Authority (FCA)](https://www.fca.org.uk/firms/new-regulated-payment-services-ais-pis).
 
 ## Local install
 
@@ -38,7 +48,11 @@ Below is example usage code.
 
 First define configuration as variables.
 
-You can read the "Guide to obtaining sandbox credentials" in the next section below for steps to obtain credentials to access one of the model bank sandboxes.
+You can read the [guide to obtaining sandbox access credentials](https://github.com/robmckinnon/open_banking_ex#guide-to-obtaining-sandbox-credentials) in the section below. It contains steps to obtain credentials to access one of the model bank sandboxes.
+
+```sh
+iex -S mix
+```
 
 ```elixir
 auth_server_issuer = "https://aspsp.example.com"
@@ -62,12 +76,11 @@ transport_key_file = "./certificates/transport.key"
 
 ### Client credentials grant
 
-Request an `access_token` using registered `token_endpoint_auth_method`.
+You request an `access_token` using the `token_endpoint_auth_method` your client registered with the ASPSP.
 
-When `token_endpoint_auth_method` is:
+When your `token_endpoint_auth_method` is `client_secret_basic` provide a `client_secret` value, and `nil` for `signing_key`.
 
-* `client_secret_basic` provide a `client_secret` value, and `nil` for `signing_key`.
-* `private_key_jwt` provide a `signing_key`, and `nil` for `client_secret`.
+When your `token_endpoint_auth_method` is `private_key_jwt` provide a `signing_key`, and `nil` for `client_secret`.
 
 ```elixir
 grant_response =
@@ -87,7 +100,7 @@ grant_response =
 
 ### Account access consent
 
-Request a `consent_id` for a given list of `permissions`:
+Request a `consent_id` for a given list of `permissions` providing the `access_token` you obtained above:
 
 ```elixir
 consent_id_response =
@@ -105,7 +118,7 @@ consent_id_response =
 
 ### Authorise consent flow
 
-Generate a `consent_url` to send the Payment Service User (PSU) to:
+Generate a `consent_url` to send the Payment Service User (PSU) to, providing the `consent_id` you obtained above:
 
 ```elixir
 consent_url =
@@ -137,7 +150,7 @@ code = "1230aBc8-2c94-4584-b546-f2d269cacabc"
 
 ### Authorise code grant
 
-Request a `resouce_access_token`, using consent `code`:
+Request a `resouce_access_token`, using the consent `code` you obtained in previous step:
 
 ```elixir
 grant_response =
@@ -156,7 +169,7 @@ grant_response =
 
 ### Resource API endpoint request
 
-Make an accounts API endpoint request, using `resource_access_token`:
+Make an accounts API endpoint request, using the `resource_access_token` you obtained in previous step:
 
 ```elixir
 accounts_endpoint = "#{resource_endpoint}/open-banking/v2.0/accounts"
