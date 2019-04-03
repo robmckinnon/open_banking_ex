@@ -4,6 +4,7 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
   """
 
   # alias Joken.Signer
+  alias OpenBanking.ApiConfig
   alias JsonWebToken.Algorithm.RsaUtil
   alias JsonWebToken.Jwa
 
@@ -59,21 +60,18 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
   https://openbanking.atlassian.net/wiki/spaces/DZ/pages/83919096/Open+Banking+Security+Profile+-+Implementer+s+Draft+v1.1.2#OpenBankingSecurityProfile-Implementer'sDraftv1.1.2-HybridGrantParameters
   """
   def authorisation_request(
-        scope,
         consent_id,
-        client_id,
-        auth_server_issuer,
-        registered_redirect_url,
         state,
+        config = %ApiConfig{},
         nonce
       ) do
     %{
-      aud: auth_server_issuer,
-      iss: client_id,
+      aud: config.auth_server_issuer,
+      iss: config.client_id,
       response_type: "code",
-      client_id: client_id,
-      redirect_uri: registered_redirect_url,
-      scope: scope,
+      client_id: config.client_id,
+      redirect_uri: config.registered_redirect_url,
+      scope: config.scope,
       state: state,
       nonce: nonce,
       max_age: 86_400,
@@ -103,20 +101,27 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
   The receiver SHOULD use this value to identify the certificate to
   be used for verifying the JWS."
   """
-  def sign(payload, signing_key, kid, alg \\ "RS256") do
-    case signing_key do
-      nil ->
-        JsonWebToken.sign(payload, %{alg: "none"})
+  def sign(
+        payload,
+        config = %ApiConfig{token_endpoint_auth_method: "private_key_jwt"}
+      ) do
+    to_sign =
+      %{
+        alg: config.signing_alg,
+        kid: config.kid
+      }
+      |> signing_input(payload)
 
-      _ ->
-        header = %{
-          alg: alg,
-          kid: kid
-        }
+    signed = signature(config.signing_alg, config.signing_key, to_sign)
 
-        to_sign = signing_input(header, payload)
-        "#{to_sign}.#{signature(alg, signing_key, to_sign)}"
-    end
+    "#{to_sign}.#{signed}"
+  end
+
+  def sign(
+        payload,
+        %ApiConfig{token_endpoint_auth_method: "client_secret_basic"}
+      ) do
+    JsonWebToken.sign(payload, %{alg: "none"})
   end
 
   defp signature(algorithm, key, signing_input) do
@@ -156,39 +161,29 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
   Generates the consent URL for user to perform manual consent flow.
   """
   def consent_url(
-        authorization_endpoint,
-        scope,
         consent_id,
-        client_id,
-        auth_server_issuer,
-        registered_redirect_url,
-        kid,
-        signing_key,
         state \\ "",
+        config = %ApiConfig{},
         nonce \\ nil
       ) do
-    request =
+    signed_token_request =
       authorisation_request(
-        scope,
         consent_id,
-        client_id,
-        auth_server_issuer,
-        registered_redirect_url,
         state,
+        config,
         nonce
       )
+      |> sign(config)
 
-    signed_token_request = sign(request, signing_key, kid)
-
-    authorization_endpoint <>
+    config.authorization_endpoint <>
       "?" <>
       URI.encode_query(
-        redirect_uri: registered_redirect_url,
+        redirect_uri: config.registered_redirect_url,
         state: state,
-        client_id: client_id,
+        client_id: config.client_id,
         response_type: "code",
         request: signed_token_request,
-        scope: scope
+        scope: config.scope
       )
   end
 end

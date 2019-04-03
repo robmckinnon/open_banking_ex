@@ -5,6 +5,7 @@ defmodule OpenBanking.AuthorisationCodeGrant do
   https://tools.ietf.org/html/rfc6749#section-4.1
   """
 
+  alias OpenBanking.ApiConfig
   import OpenBanking.AccessTokenRequest
 
   @doc """
@@ -57,29 +58,12 @@ defmodule OpenBanking.AuthorisationCodeGrant do
   +---------+       (w/ Optional Refresh Token)
   """
   def request_access_token(
-        client_id,
-        token_endpoint,
-        signing_key,
-        client_secret,
-        token_endpoint_auth_method,
-        redirect_uri,
         authorisation_code,
-        transport_key_file \\ "./certificates/transport.key",
-        transport_cert_file \\ "./certificates/transport.pem"
+        config = %ApiConfig{}
       )
-      when is_binary(client_id) and is_binary(token_endpoint) and
-             is_binary(token_endpoint_auth_method) and is_binary(redirect_uri) and
-             is_binary(authorisation_code) do
+      when is_binary(authorisation_code) do
     authorisation_code
-    |> access_token_request_payload(client_id, redirect_uri)
-    |> do_request_access_token(
-      token_endpoint_auth_method,
-      client_id,
-      token_endpoint,
-      signing_key,
-      client_secret,
-      transport_key_file,
-      transport_cert_file
-    )
+    |> access_token_request_payload(config.client_id, config.registered_redirect_url)
+    |> do_request_access_token(config)
   end
 end

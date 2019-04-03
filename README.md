@@ -55,23 +55,24 @@ iex -S mix
 ```
 
 ```elixir
-auth_server_issuer = "https://aspsp.example.com"
-authorization_endpoint = "https://aspsp.example.com/auth"
-client_id = "abc8bebb-f67e-4485-bfd9-6656d87a681c" # replace with actual client_id
-client_secret = "c8be8546-ccac-4536-b9b8-4c919451cd44" # set when token_endpoint_auth_method is "client_secret_basic"
-fapi_financial_id = "0012300001041ABCD" # replace with actual fapi_financial_id
-kid = "1aBCwxyzYlsVO9lco72IWV2Mqmk" # replace with actual kid
-permissions = ["ReadAccountsDetail", "ReadBalances"]
-registered_redirect_url = "https://tpp.example.com/oauth2/callback"
-resource_endpoint = "https://aspsp.example.com"
-scope = "accounts payments"
-scope = "openid accounts"
-signing_key = "-----BEGIN PRIVATE KEY-----\example\example\example\n-----END PRIVATE KEY-----" # set when token_endpoint_auth_method is "private_key_jwt"
-state = ""
-token_endpoint = "https://aspsp.example.com/token"
-token_endpoint_auth_method = "client_secret_basic" # or "private_key_jwt"
-transport_cert_file = "./certificates/transport.pem"
-transport_key_file = "./certificates/transport.key"
+config = %OpenBanking.ApiConfig{
+  auth_server_issuer: "https://aspsp.example.com",
+  authorization_endpoint: "https://aspsp.example.com/auth",
+  client_id: "abc8bebb-f67e-4485-bfd9-6656d87a681c", # replace with actual client_id
+  client_secret: "c8be8546-ccac-4536-b9b8-4c919451cd44", # set when token_endpoint_auth_method is "client_secret_basic"
+  fapi_financial_id: "0012300001041ABCD", # replace with actual ASPSP fapi_financial_id
+  kid: "1aBCwxyzYlsVO9lco72IWV2Mqmk", # replace with actual kid
+  permissions: ["ReadAccountsDetail", "ReadBalances"],
+  registered_redirect_url: "https://tpp.example.com/oauth2/callback",
+  resource_endpoint: "https://aspsp.example.com",
+  scope: "accounts payments",
+  signing_alg: "RS256", # set when token_endpoint_auth_method is "private_key_jwt"
+  signing_key: "-----BEGIN PRIVATE KEY-----\example\example\example\n-----END PRIVATE KEY-----", # set when token_endpoint_auth_method is "private_key_jwt"
+  token_endpoint: "https://aspsp.example.com/token",
+  token_endpoint_auth_method: "client_secret_basic", # or "private_key_jwt"
+  transport_cert_file: "./certificates/transport.pem",
+  transport_key_file: "./certificates/transport.key"
+}
 ```
 
 ### Client credentials grant
@@ -84,16 +85,7 @@ When your `token_endpoint_auth_method` is `private_key_jwt` provide a `signing_k
 
 ```elixir
 grant_response =
-  OpenBanking.ClientCredentialsGrant.request_access_token(
-    client_id,
-    token_endpoint,
-    signing_key,
-    client_secret,
-    token_endpoint_auth_method,
-    scope,
-    transport_key_file,
-    transport_cert_file
-  )
+  OpenBanking.ClientCredentialsGrant.request_access_token(config)
 
 {:ok, access_token} = OpenBanking.AccessTokenRequest.access_token(grant_response)
 ```
@@ -106,11 +98,7 @@ Request a `consent_id` for a given list of `permissions` providing the `access_t
 consent_id_response =
   OpenBanking.AccountAccessConsent.request_consent_id(
     access_token,
-    resource_endpoint,
-    fapi_financial_id,
-    transport_key_file,
-    transport_cert_file,
-    permissions
+    config
   )
 
 {:ok, consent_id} = OpenBanking.AccountAccessConsent.consent_id(consent_id_response)
@@ -123,15 +111,9 @@ Generate a `consent_url` to send the Payment Service User (PSU) to, providing th
 ```elixir
 consent_url =
   OpenBanking.AuthoriseConsentRedirectionFlow.consent_url(
-    authorization_endpoint,
-    scope,
     consent_id,
-    client_id,
-    auth_server_issuer,
-    registered_redirect_url,
-    kid,
-    signing_key,
-    state
+    state="",
+    config
   )
 ```
 
@@ -155,13 +137,8 @@ Request a `resouce_access_token`, using the consent `code` you obtained in previ
 ```elixir
 grant_response =
   OpenBanking.AuthorisationCodeGrant.request_access_token(
-    client_id,
-    token_endpoint,
-    signing_key,
-    client_secret,
-    token_endpoint_auth_method,
-    registered_redirect_url,
-    code
+    code,
+    config
   )
 
 {:ok, resource_access_token} = OpenBanking.AccessTokenRequest.access_token(grant_response)
@@ -172,14 +149,13 @@ grant_response =
 Make an accounts API endpoint request, using the `resource_access_token` you obtained in previous step:
 
 ```elixir
-accounts_endpoint = "#{resource_endpoint}/open-banking/v2.0/accounts"
+accounts_endpoint = "#{config.resource_endpoint}/open-banking/v2.0/accounts"
 
 resource_response =
   OpenBanking.AccountResourceRequest.request_account_resource(
-    client_id,
     accounts_endpoint,
     resource_access_token,
-    fapi_financial_id
+    config
   )
 ```
 
