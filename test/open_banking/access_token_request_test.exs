@@ -1,17 +1,19 @@
 defmodule OpenBanking.AccessTokenRequestTest do
   use ExUnit.Case, async: false
   # doctest OpenBanking.AccessTokenRequest
-  alias OpenBanking.{AccessTokenRequest, IdToken}
+  alias OpenBanking.{AccessTokenRequest, ApiConfig, IdToken}
 
   import Mock
 
   describe "AccessTokenRequest.do_request_access_token" do
     setup do
       [
-        client_id: "client_id",
-        token_endpoint: "token_endpoint",
-        signing_key: "signing_key",
-        client_secret: "client_secret",
+        config: %ApiConfig{
+          client_id: "client_id",
+          token_endpoint: "token_endpoint",
+          signing_key: "signing_key",
+          client_secret: "client_secret"
+        },
         token_request_payload: %{
           grant_type: "client_credentials",
           scope: "accounts"
@@ -37,19 +39,19 @@ defmodule OpenBanking.AccessTokenRequestTest do
 
     test "with 'client_secret_basic' calls HTTPoison.post with auth header set", context do
       with_mock HTTPoison, post: context[:mock_post] do
-        AccessTokenRequest.do_request_access_token(
-          context[:token_request_payload],
-          "client_secret_basic",
-          context[:client_id],
-          context[:token_endpoint],
-          context[:signing_key],
-          context[:client_secret]
-        )
+        config =
+          context[:config]
+          |> Map.put(:token_endpoint_auth_method, "client_secret_basic")
+
+        context[:token_request_payload]
+        |> AccessTokenRequest.do_request_access_token(config)
+
+        expected_access_token_request = context[:token_request_payload] |> Map.to_list()
 
         assert_called(
           HTTPoison.post(
             "token_endpoint",
-            {:form, context[:token_request_payload] |> Map.to_list()},
+            {:form, expected_access_token_request},
             [
               {"Content-Type", "application/x-www-form-urlencoded"},
               {"authorization", "Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ="}
@@ -64,16 +66,14 @@ defmodule OpenBanking.AccessTokenRequestTest do
          context do
       with_mock HTTPoison, post: context[:mock_post] do
         with_mock IdToken, sign: context[:mock_sign], claims: context[:mock_claims] do
-          AccessTokenRequest.do_request_access_token(
-            context[:token_request_payload],
-            "private_key_jwt",
-            context[:client_id],
-            context[:token_endpoint],
-            context[:signing_key],
-            context[:client_secret]
-          )
+          config =
+            context[:config]
+            |> Map.put(:token_endpoint_auth_method, "private_key_jwt")
 
-          access_token_request = [
+          context[:token_request_payload]
+          |> AccessTokenRequest.do_request_access_token(config)
+
+          expected_access_token_request = [
             client_assertion: "jwt",
             client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             grant_type: "client_credentials",
@@ -83,7 +83,7 @@ defmodule OpenBanking.AccessTokenRequestTest do
           assert_called(
             HTTPoison.post(
               "token_endpoint",
-              {:form, access_token_request},
+              {:form, expected_access_token_request},
               [{"Content-Type", "application/x-www-form-urlencoded"}],
               ssl: context[:ssl_options]
             )

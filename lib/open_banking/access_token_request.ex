@@ -6,70 +6,23 @@ defmodule OpenBanking.AccessTokenRequest do
   require Logger
   alias OpenBanking.{ApiConfig, IdToken, SslConfig}
 
-  def do_request_access_token(request_payload, config = %ApiConfig{}) do
-    do_request_access_token(
-      request_payload,
-      config.token_endpoint_auth_method,
-      config.client_id,
-      config.token_endpoint,
-      config.signing_key,
-      config.client_secret
-    )
-  end
-
-  @doc """
-  Request access token from token_endpoint using given
-  token_endpoint_auth_method to authenticate.
-  The token_endpoint_auth_method's supported are:
-  * client_secret_basic
-  * private_key_jwt
-  """
-  def do_request_access_token(
-        request_payload,
-        token_endpoint_auth_method,
-        client_id,
-        token_endpoint,
-        signing_key,
-        client_secret
-      )
-      when is_binary(client_id) and is_binary(token_endpoint) and
-             is_binary(token_endpoint_auth_method) do
-    do_request_access_token(
-      request_payload,
-      token_endpoint_auth_method,
-      client_id,
-      token_endpoint,
-      signing_key,
-      client_secret,
-      "./certificates/transport.key",
-      "./certificates/transport.pem"
-    )
-  end
-
   @doc """
   Request access token from token_endpoint using
   "client_secret_basic" authentication method to authenticate.
   """
   def do_request_access_token(
         request_payload,
-        _token_endpoint_auth_method = "client_secret_basic",
-        client_id,
-        token_endpoint,
-        _signing_key,
-        client_secret,
-        transport_key_file,
-        transport_cert_file
-      )
-      when is_binary(client_id) and is_binary(token_endpoint) do
+        config = %ApiConfig{token_endpoint_auth_method: "client_secret_basic"}
+      ) do
     headers = [
-      {"authorization", basic_credentials(client_id, client_secret)}
+      {"authorization", basic_credentials(config.client_id, config.client_secret)}
     ]
 
-    token_endpoint
+    config.token_endpoint
     |> post_access_request(
       request_payload,
-      transport_key_file,
-      transport_cert_file,
+      config.transport_key_file,
+      config.transport_cert_file,
       headers
     )
     |> handle_response
@@ -81,17 +34,11 @@ defmodule OpenBanking.AccessTokenRequest do
   """
   def do_request_access_token(
         request_payload,
-        _token_endpoint_auth_method = "private_key_jwt",
-        client_id,
-        token_endpoint,
-        signing_key,
-        _client_secret,
-        transport_key_file,
-        transport_cert_file
-      )
-      when is_binary(client_id) and is_binary(token_endpoint) do
-    with {:ok, claims} <- IdToken.claims(client_id: client_id, token_endpoint: token_endpoint),
-         {:ok, jwt, _claims} <- IdToken.sign(claims, signing_key) do
+        config = %ApiConfig{token_endpoint_auth_method: "private_key_jwt"}
+      ) do
+    with {:ok, claims} <-
+           IdToken.claims(client_id: config.client_id, token_endpoint: config.token_endpoint),
+         {:ok, jwt, _claims} <- IdToken.sign(claims, config.signing_key) do
       request_payload =
         request_payload
         |> Map.merge(%{
@@ -99,11 +46,11 @@ defmodule OpenBanking.AccessTokenRequest do
           client_assertion: jwt
         })
 
-      token_endpoint
+      config.token_endpoint
       |> post_access_request(
         request_payload,
-        transport_key_file,
-        transport_cert_file
+        config.transport_key_file,
+        config.transport_cert_file
       )
       |> handle_response
     else

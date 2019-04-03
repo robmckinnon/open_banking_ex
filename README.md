@@ -84,16 +84,7 @@ When your `token_endpoint_auth_method` is `private_key_jwt` provide a `signing_k
 
 ```elixir
 grant_response =
-  OpenBanking.ClientCredentialsGrant.request_access_token(
-    client_id,
-    token_endpoint,
-    signing_key,
-    client_secret,
-    token_endpoint_auth_method,
-    scope,
-    transport_key_file,
-    transport_cert_file
-  )
+  OpenBanking.ClientCredentialsGrant.request_access_token(config)
 
 {:ok, access_token} = OpenBanking.AccessTokenRequest.access_token(grant_response)
 ```
@@ -106,11 +97,11 @@ Request a `consent_id` for a given list of `permissions` providing the `access_t
 consent_id_response =
   OpenBanking.AccountAccessConsent.request_consent_id(
     access_token,
-    resource_endpoint,
-    fapi_financial_id,
-    transport_key_file,
-    transport_cert_file,
-    permissions
+    config.resource_endpoint,
+    config.fapi_financial_id,
+    config.transport_key_file,
+    config.transport_cert_file,
+    config.permissions
   )
 
 {:ok, consent_id} = OpenBanking.AccountAccessConsent.consent_id(consent_id_response)
@@ -123,15 +114,15 @@ Generate a `consent_url` to send the Payment Service User (PSU) to, providing th
 ```elixir
 consent_url =
   OpenBanking.AuthoriseConsentRedirectionFlow.consent_url(
-    authorization_endpoint,
-    scope,
+    config.authorization_endpoint,
+    config.scope,
     consent_id,
-    client_id,
-    auth_server_issuer,
-    registered_redirect_url,
-    kid,
-    signing_key,
-    state
+    config.client_id,
+    config.auth_server_issuer,
+    config.registered_redirect_url,
+    config.kid,
+    nil, # config.signing_key,
+    state=""
   )
 ```
 
@@ -155,13 +146,8 @@ Request a `resouce_access_token`, using the consent `code` you obtained in previ
 ```elixir
 grant_response =
   OpenBanking.AuthorisationCodeGrant.request_access_token(
-    client_id,
-    token_endpoint,
-    signing_key,
-    client_secret,
-    token_endpoint_auth_method,
-    registered_redirect_url,
-    code
+    code,
+    config
   )
 
 {:ok, resource_access_token} = OpenBanking.AccessTokenRequest.access_token(grant_response)
