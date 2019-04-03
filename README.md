@@ -66,7 +66,8 @@ config = %OpenBanking.ApiConfig{
   registered_redirect_url: "https://tpp.example.com/oauth2/callback",
   resource_endpoint: "https://aspsp.example.com",
   scope: "accounts payments",
-  signing_key: "-----BEGIN PRIVATE KEY-----\example\example\example\n-----END PRIVATE KEY-----",  # set when token_endpoint_auth_method is "private_key_jwt"
+  signing_alg: "RS256", # set when token_endpoint_auth_method is "private_key_jwt"
+  signing_key: "-----BEGIN PRIVATE KEY-----\example\example\example\n-----END PRIVATE KEY-----", # set when token_endpoint_auth_method is "private_key_jwt"
   token_endpoint: "https://aspsp.example.com/token",
   token_endpoint_auth_method: "client_secret_basic", # or "private_key_jwt"
   transport_cert_file: "./certificates/transport.pem",
@@ -110,15 +111,9 @@ Generate a `consent_url` to send the Payment Service User (PSU) to, providing th
 ```elixir
 consent_url =
   OpenBanking.AuthoriseConsentRedirectionFlow.consent_url(
-    config.authorization_endpoint,
-    config.scope,
     consent_id,
-    config.client_id,
-    config.auth_server_issuer,
-    config.registered_redirect_url,
-    config.kid,
-    nil, # config.signing_key,
-    state=""
+    state="",
+    config
   )
 ```
 
@@ -154,7 +149,7 @@ grant_response =
 Make an accounts API endpoint request, using the `resource_access_token` you obtained in previous step:
 
 ```elixir
-accounts_endpoint = "#{resource_endpoint}/open-banking/v2.0/accounts"
+accounts_endpoint = "#{config.resource_endpoint}/open-banking/v2.0/accounts"
 
 resource_response =
   OpenBanking.AccountResourceRequest.request_account_resource(

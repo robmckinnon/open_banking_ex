@@ -13,6 +13,7 @@ defmodule OpenBanking.ApiConfig do
             registered_redirect_url: "http://0.0.0.0/oauth2/callback",
             resource_endpoint: "",
             scope: "accounts payments",
+            signing_alg: "",
             signing_key: "",
             token_endpoint: "",
             token_endpoint_auth_method: "client_secret_basic",
