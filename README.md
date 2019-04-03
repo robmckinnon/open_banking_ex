@@ -55,23 +55,23 @@ iex -S mix
 ```
 
 ```elixir
-auth_server_issuer = "https://aspsp.example.com"
-authorization_endpoint = "https://aspsp.example.com/auth"
-client_id = "abc8bebb-f67e-4485-bfd9-6656d87a681c" # replace with actual client_id
-client_secret = "c8be8546-ccac-4536-b9b8-4c919451cd44" # set when token_endpoint_auth_method is "client_secret_basic"
-fapi_financial_id = "0012300001041ABCD" # replace with actual fapi_financial_id
-kid = "1aBCwxyzYlsVO9lco72IWV2Mqmk" # replace with actual kid
-permissions = ["ReadAccountsDetail", "ReadBalances"]
-registered_redirect_url = "https://tpp.example.com/oauth2/callback"
-resource_endpoint = "https://aspsp.example.com"
-scope = "accounts payments"
-scope = "openid accounts"
-signing_key = "-----BEGIN PRIVATE KEY-----\example\example\example\n-----END PRIVATE KEY-----" # set when token_endpoint_auth_method is "private_key_jwt"
-state = ""
-token_endpoint = "https://aspsp.example.com/token"
-token_endpoint_auth_method = "client_secret_basic" # or "private_key_jwt"
-transport_cert_file = "./certificates/transport.pem"
-transport_key_file = "./certificates/transport.key"
+config = %OpenBanking.ApiConfig{
+  auth_server_issuer: "https://aspsp.example.com",
+  authorization_endpoint: "https://aspsp.example.com/auth",
+  client_id: "abc8bebb-f67e-4485-bfd9-6656d87a681c", # replace with actual client_id
+  client_secret: "c8be8546-ccac-4536-b9b8-4c919451cd44", # set when token_endpoint_auth_method is "client_secret_basic"
+  fapi_financial_id: "0012300001041ABCD", # replace with actual ASPSP fapi_financial_id
+  kid: "1aBCwxyzYlsVO9lco72IWV2Mqmk", # replace with actual kid
+  permissions: ["ReadAccountsDetail", "ReadBalances"],
+  registered_redirect_url: "https://tpp.example.com/oauth2/callback",
+  resource_endpoint: "https://aspsp.example.com",
+  scope: "accounts payments",
+  signing_key: "-----BEGIN PRIVATE KEY-----\example\example\example\n-----END PRIVATE KEY-----",  # set when token_endpoint_auth_method is "private_key_jwt"
+  token_endpoint: "https://aspsp.example.com/token",
+  token_endpoint_auth_method: "client_secret_basic", # or "private_key_jwt"
+  transport_cert_file: "./certificates/transport.pem",
+  transport_key_file: "./certificates/transport.key"
+}
 ```
 
 ### Client credentials grant

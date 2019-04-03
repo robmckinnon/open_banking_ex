@@ -24,3 +24,5 @@ open_banking_ex-*.tar
 
 # Ignore transport cert/key
 /certificates/transport*
+
+config.exs

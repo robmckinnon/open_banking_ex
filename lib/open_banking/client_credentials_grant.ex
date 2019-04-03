@@ -5,6 +5,7 @@ defmodule OpenBanking.ClientCredentialsGrant do
   https://tools.ietf.org/html/rfc6749#section-4.4
   """
 
+  alias OpenBanking.ApiConfig
   import OpenBanking.AccessTokenRequest
 
   @doc """
@@ -52,28 +53,9 @@ defmodule OpenBanking.ClientCredentialsGrant do
         issues an access token."
 
   """
-  def request_access_token(
-        client_id,
-        token_endpoint,
-        signing_key,
-        client_secret,
-        token_endpoint_auth_method \\ "private_key_jwt",
-        scope \\ "accounts payments",
-        transport_key_file \\ "./certificates/transport.key",
-        transport_cert_file \\ "./certificates/transport.pem"
-      )
-      when is_binary(client_id) and is_binary(token_endpoint) and
-             is_binary(token_endpoint_auth_method) and is_binary(scope) do
-    scope
+  def request_access_token(config = %ApiConfig{}) do
+    config.scope
     |> access_token_request_payload()
-    |> do_request_access_token(
-      token_endpoint_auth_method,
-      client_id,
-      token_endpoint,
-      signing_key,
-      client_secret,
-      transport_key_file,
-      transport_cert_file
-    )
+    |> do_request_access_token(config)
   end
 end

@@ -4,7 +4,18 @@ defmodule OpenBanking.AccessTokenRequest do
   """
 
   require Logger
-  alias OpenBanking.{IdToken, SslConfig}
+  alias OpenBanking.{ApiConfig, IdToken, SslConfig}
+
+  def do_request_access_token(request_payload, config = %ApiConfig{}) do
+    do_request_access_token(
+      request_payload,
+      config.token_endpoint_auth_method,
+      config.client_id,
+      config.token_endpoint,
+      config.signing_key,
+      config.client_secret
+    )
+  end
 
   @doc """
   Request access token from token_endpoint using given
@@ -127,7 +138,6 @@ defmodule OpenBanking.AccessTokenRequest do
         headers \\ nil
       ) do
     access_token_request = access_token_request |> Map.to_list()
-    Logger.info(inspect(access_token_request))
 
     HTTPoison.post(
       token_endpoint,
