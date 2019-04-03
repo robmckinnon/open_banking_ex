@@ -4,7 +4,7 @@ defmodule OpenBanking.AccountResourceRequest do
   """
   require Logger
 
-  alias OpenBanking.SslConfig
+  alias OpenBanking.{ApiConfig, SslConfig}
 
   @application_json "application/json; charset=utf-8"
 
@@ -38,20 +38,17 @@ defmodule OpenBanking.AccountResourceRequest do
   Returns response or raises Error.
   """
   def request_account_resource(
-        client_id,
         resource_endpoint,
         access_token,
-        fapi_financial_id,
-        transport_key_file \\ "./certificates/transport.key",
-        transport_cert_file \\ "./certificates/transport.pem"
+        config = %ApiConfig{}
       )
-      when is_binary(resource_endpoint) and is_binary(client_id) and is_binary(access_token) do
+      when is_binary(access_token) and is_binary(resource_endpoint) do
     case get_account_resource(
            resource_endpoint,
            access_token,
-           fapi_financial_id,
-           transport_key_file,
-           transport_cert_file
+           config.fapi_financial_id,
+           config.transport_key_file,
+           config.transport_cert_file
          ) do
       {:ok, response} ->
         response

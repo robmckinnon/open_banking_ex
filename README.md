@@ -97,11 +97,7 @@ Request a `consent_id` for a given list of `permissions` providing the `access_t
 consent_id_response =
   OpenBanking.AccountAccessConsent.request_consent_id(
     access_token,
-    config.resource_endpoint,
-    config.fapi_financial_id,
-    config.transport_key_file,
-    config.transport_cert_file,
-    config.permissions
+    config
   )
 
 {:ok, consent_id} = OpenBanking.AccountAccessConsent.consent_id(consent_id_response)
@@ -162,10 +158,9 @@ accounts_endpoint = "#{resource_endpoint}/open-banking/v2.0/accounts"
 
 resource_response =
   OpenBanking.AccountResourceRequest.request_account_resource(
-    client_id,
     accounts_endpoint,
     resource_access_token,
-    fapi_financial_id
+    config
   )
 ```
 

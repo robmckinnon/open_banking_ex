@@ -3,7 +3,7 @@ defmodule OpenBanking.AccountAccessConsent do
   For performing HTTP POST calls to token endpoint.
   """
 
-  alias OpenBanking.SslConfig
+  alias OpenBanking.{ApiConfig, SslConfig}
   require Logger
 
   defp headers(access_token, fapi_financial_id) do
@@ -55,20 +55,14 @@ defmodule OpenBanking.AccountAccessConsent do
   """
   def request_consent_id(
         access_token,
-        resource_endpoint,
-        fapi_financial_id,
-        transport_key_file \\ "./certificates/transport.key",
-        transport_cert_file \\ "./certificates/transport.pem",
-        permissions \\ @all_permissions
+        config = %ApiConfig{}
       )
-      when is_binary(access_token) and is_binary(resource_endpoint) and
-             is_binary(fapi_financial_id) and is_list(permissions) and
-             is_binary(transport_key_file) and is_binary(transport_cert_file) do
-    with headers <- headers(access_token, fapi_financial_id),
-         request_payload <- request_payload(permissions),
-         ssl_config <- SslConfig.ssl_config(transport_cert_file, transport_key_file) do
+      when is_binary(access_token) do
+    with headers <- headers(access_token, config.fapi_financial_id),
+         request_payload <- request_payload(config.permissions),
+         ssl_config <- SslConfig.ssl_config(config.transport_cert_file, config.transport_key_file) do
       case HTTPoison.post(
-             "#{resource_endpoint}/open-banking/v2.0/account-requests",
+             "#{config.resource_endpoint}/open-banking/v2.0/account-requests",
              request_payload,
              headers,
              ssl: ssl_config
