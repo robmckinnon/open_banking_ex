@@ -75,13 +75,68 @@ config = %OpenBanking.ApiConfig{
 }
 ```
 
-### Client credentials grant
-
-You request an `access_token` using the `token_endpoint_auth_method` your client registered with the ASPSP.
-
 When your `token_endpoint_auth_method` is `client_secret_basic` provide a `client_secret` value, and `nil` for `signing_key`.
 
 When your `token_endpoint_auth_method` is `private_key_jwt` provide a `signing_key`, and `nil` for `client_secret`.
+
+
+### Accounts API endpoints access example
+
+Here's a sample overview of the flow to access Account API resource endpoints:
+
+```elixir
+alias OpenBanking.{ClientCredentialsGrant, AccessTokenRequest, AccountAccessConsent, AuthoriseConsentRedirectionFlow}
+
+with grant_response <-
+       ClientCredentialsGrant.request_access_token(config),
+     {:ok, access_token} <- AccessTokenRequest.access_token(grant_response),
+     response <-
+       AccountAccessConsent.request_consent_id(access_token, config),
+     {:ok, consent_id} <-
+       AccountAccessConsent.consent_id(response),
+     consent_url <-
+       AuthoriseConsentRedirectionFlow.consent_url(
+         consent_id,
+         state = "",
+         config
+       ) do
+  System.cmd("open", [consent_url])
+end
+```
+
+This opens the `consent_url` in browser. You manually authenticate and authorise
+consent via the ASPSP's browser interface and any additional Strong Customer
+Authentication (SCA) multi-factor authentication steps.
+
+Then copy the `code` param from redirect back URL in browser address bar and
+set as `code` variable in `iex` session, e.g.:
+
+```elixir
+code = "1230aBc8-2c94-4584-b546-f2d269cacabc"
+
+import Logger
+alias OpenBanking.{AuthorisationCodeGrant, AccountResourceRequest}
+
+with grant_response <- AuthorisationCodeGrant.request_access_token(code, config),
+     {:ok, access_token} <- AccessTokenRequest.access_token(grant_response) do
+
+  "#{config.resource_endpoint}/open-banking/v2.0/accounts"
+  |> AccountResourceRequest.request_account_resource(access_token, config)
+  |> inspect()
+  |> Logger.info()
+
+  "#{config.resource_endpoint}/open-banking/v2.0/balances"
+  |> AccountResourceRequest.request_account_resource(access_token, config)
+  |> inspect()
+  |> Logger.info()
+end
+```
+
+You can see the same steps explained in more detail in the following sections.
+
+#### Client credentials grant
+
+You request an `access_token` using the `token_endpoint_auth_method` your client registered with the ASPSP.
 
 ```elixir
 grant_response =
@@ -90,7 +145,7 @@ grant_response =
 {:ok, access_token} = OpenBanking.AccessTokenRequest.access_token(grant_response)
 ```
 
-### Account access consent
+#### Account access consent
 
 Request a `consent_id` for a given list of `permissions` providing the `access_token` you obtained above:
 
@@ -104,7 +159,7 @@ consent_id_response =
 {:ok, consent_id} = OpenBanking.AccountAccessConsent.consent_id(consent_id_response)
 ```
 
-### Authorise consent flow
+#### Authorise consent flow
 
 Generate a `consent_url` to send the Payment Service User (PSU) to, providing the `consent_id` you obtained above:
 
@@ -130,7 +185,7 @@ set as `code` variable in `iex` session, e.g.:
 code = "1230aBc8-2c94-4584-b546-f2d269cacabc"
 ```
 
-### Authorise code grant
+#### Authorise code grant
 
 Request a `resouce_access_token`, using the consent `code` you obtained in previous step:
 
@@ -144,7 +199,7 @@ grant_response =
 {:ok, resource_access_token} = OpenBanking.AccessTokenRequest.access_token(grant_response)
 ```
 
-### Resource API endpoint request
+#### Resource API endpoint request
 
 Make an accounts API endpoint request, using the `resource_access_token` you obtained in previous step:
 
@@ -158,7 +213,6 @@ resource_response =
     config
   )
 ```
-
 
 ## Guide to obtaining sandbox credentials
 
