@@ -167,12 +167,8 @@ defmodule OpenBanking.AuthoriseConsentRedirectionFlow do
         nonce \\ nil
       ) do
     signed_token_request =
-      authorisation_request(
-        consent_id,
-        state,
-        config,
-        nonce
-      )
+      consent_id
+      |> authorisation_request(state, config, nonce)
       |> sign(config)
 
     config.authorization_endpoint <>
